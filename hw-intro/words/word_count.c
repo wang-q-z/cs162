@@ -37,8 +37,17 @@ int init_words(WordCount **wclist) {
      Returns 0 if no errors are encountered
      in the body of this function; 1 otherwise.
   */
-  *wclist = NULL;
-  return 0;
+  WordCount *wordlist= (WordCount*) malloc(sizeof(WordCount));
+
+  if (wordlist == NULL) {
+    return 0;
+  }
+
+  wordlist->word = NULL;
+  wordlist->count = 0;
+  wordlist->next = NULL;
+  *wclist = wordlist;
+  return 1;
 }
 
 ssize_t len_words(WordCount *wchead) {
@@ -47,12 +56,27 @@ ssize_t len_words(WordCount *wchead) {
      this function.
   */
     size_t len = 0;
+
+    WordCount *wordlist = wchead;
+    while (wordlist) {
+      len++;
+      wordlist = wordlist->next;
+    }
+
     return len;
 }
 
 WordCount *find_word(WordCount *wchead, char *word) {
   /* Return count for word, if it exists */
   WordCount *wc = NULL;
+  WordCount *wordlist = wchead;
+  while(wordlist) {
+    if (strcmp(wordlist->word, word) == 0) {
+      wc = wordlist;
+      break;
+    }
+    wordlist = wordlist->next;
+  }
   return wc;
 }
 
@@ -61,7 +85,37 @@ int add_word(WordCount **wclist, char *word) {
      Otherwise insert with count 1.
      Returns 0 if no errors are encountered in the body of this function; 1 otherwise.
   */
- return 0;
+  //分为三种情况，第一种wclist是空的，第二种是能找到的，第三种是找不到
+
+  //第一种wclist是空的
+  if((*wclist)->word == NULL) {
+    (*wclist)->word = new_str(word);
+    if((*wclist)->word == NULL)
+      return 1;
+    (*wclist)->count = 1;
+  } else {
+    //第二种情况能找到
+    WordCount *wc = NULL;
+    if((wc = find_word(*wclist, word)) != NULL) {
+      wc->count++;
+    } else {
+      //第三种情况没找到，那么在wclist的尾部插入一个新的
+      wc = *wclist;
+      while(wc->next != NULL)
+        wc = wc->next;
+
+      WordCount *new_word = (WordCount *) malloc(sizeof(WordCount));
+      if(new_word == NULL)
+        return 1;
+      new_word->word = new_str(word);
+      if(new_word == NULL)
+        return 1;
+      new_word->count = 1;
+      new_word->next = NULL;
+      wc->next = new_word;
+    }
+    return 0;
+  }
 }
 
 void fprint_words(WordCount *wchead, FILE *ofile) {
