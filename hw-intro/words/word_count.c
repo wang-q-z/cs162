@@ -89,7 +89,7 @@ int add_word(WordCount **wclist, char *word) {
 
   //第一种wclist是空的
   if((*wclist)->word == NULL) {
-    (*wclist)->word = new_str(word);
+    (*wclist)->word = new_string(word);
     if((*wclist)->word == NULL)
       return 1;
     (*wclist)->count = 1;
@@ -107,15 +107,15 @@ int add_word(WordCount **wclist, char *word) {
       WordCount *new_word = (WordCount *) malloc(sizeof(WordCount));
       if(new_word == NULL)
         return 1;
-      new_word->word = new_str(word);
+      new_word->word = new_string(word);
       if(new_word == NULL)
         return 1;
       new_word->count = 1;
       new_word->next = NULL;
       wc->next = new_word;
     }
-    return 0;
   }
+      return 0;
 }
 
 void fprint_words(WordCount *wchead, FILE *ofile) {
