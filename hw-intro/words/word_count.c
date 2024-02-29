@@ -71,7 +71,7 @@ WordCount *find_word(WordCount *wchead, char *word) {
   WordCount *wc = NULL;
   WordCount *wordlist = wchead;
   while(wordlist) {
-    if (strcmp(wc->word, word) == 0) {
+    if (strcmp(wordlist->word, word) == 0) {
       wc = wordlist;
       break;
     }
@@ -85,30 +85,37 @@ int add_word(WordCount **wclist, char *word) {
      Otherwise insert with count 1.
      Returns 0 if no errors are encountered in the body of this function; 1 otherwise.
   */
-  WordCount *wordlist = *wclist;
+  //分为三种情况，第一种wclist是空的，第二种是能找到的，第三种是找不到
 
-  while(true) {
-    if(strcmp(wordlist->word, word) == 0) {
-      wordlist->count++;
-      return 0;
-    }
+  //第一种wclist是空的
+  if((*wclist)->word == NULL) {
+    (*wclist)->word = new_str(word);
+    if((*wclist)->word == NULL)
+      return 1;
+    (*wclist)->count = 1;
+  } else {
+    //第二种情况能找到
+    WordCount *wc = NULL;
+    if((wc = find_word(*wclist, word)) != NULL) {
+      wc->count++;
+    } else {
+      //第三种情况没找到，那么在wclist的尾部插入一个新的
+      wc = *wclist;
+      while(wc->next != NULL)
+        wc = wc->next;
 
-    if(!wordlist->next) {
-      break;
+      WordCount *new_word = (WordCount *) malloc(sizeof(WordCount));
+      if(new_word == NULL)
+        return 1;
+      new_word->word = new_str(word);
+      if(new_word == NULL)
+        return 1;
+      new_word->count = 1;
+      new_word->next = NULL;
+      wc->next = new_word;
     }
-    wordlist = wordlist->next;
+    return 0;
   }
-
-  Wordcount *wordcount = (WordCount*) malloc(sizeof(WordCount));
-  if(!wordcount)
-    return 1;
-
-  wordlist->next = wordcount;
-  wordcount->word = word;
-  wordcount->next = NULL;
-  wordcount->count = 1;
-
- return 0;
 }
 
 void fprint_words(WordCount *wchead, FILE *ofile) {
