@@ -1,0 +1,36 @@
+1. 
+	movl	8(%ebp), %eax
+	subl	$1, %eax
+	subl	$12, %esp
+	pushl	%eax
+	call	recur
+	addl	$16, %esp
+
+2. 
+.text contains the actual executable instruction.
+.data contains the static data which is not stored in stack.
+
+3.
+objdump -t 
+
+4.
+"g" the symbol is a global
+"O" the symbol is the name of an object
+"F" the symbol is the name of a function
+"*UND*" the section is referenced in the file being dumped, but not defined there 
+
+5.
+00000000         *UND*  00000000 recur
+00000000 g     F .text  00000052 recur
+
+7.
+.text
+
+8.
+.data
+
+9.
+Stack and heap are runtime concepts, which have no pre-baked segment in the executable. 
+Since they are just scratch space used dynamically, 
+there's no reason why they should be present in the executable; 
+they are created automatically at process (heap) or thread (stack) creation
