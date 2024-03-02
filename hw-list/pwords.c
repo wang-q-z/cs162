@@ -32,6 +32,31 @@
 #include "word_count.h"
 #include "word_helpers.h"
 
+typedef struct pargs {
+  char *filename;
+  word_count_list_t *word_counts;
+}pargs;
+
+char *new_str(char *str) {
+  char *new_string = (char *) malloc(strlen(str) + 1);
+  if (new_string == NULL) {
+    return NULL;
+  }
+  return strcpy(new_string, str);
+};
+
+void* countword(void* arg){ 
+  pargs *thread_arg = (pargs*)arg;
+  FILE* infile = fopen(thread_arg->filename, "r");
+    if (infile == NULL) {
+    fprintf(stderr, "File does not exist.\n");
+    exit(1);
+  };
+  count_words(thread_arg->word_counts, infile);
+
+  fclose(infile);
+  pthread_exit(NULL);
+};
 /*
  * main - handle command line, spawning one thread per file.
  */
@@ -39,14 +64,33 @@ int main(int argc, char* argv[]) {
   /* Create the empty data structure. */
   word_count_list_t word_counts;
   init_words(&word_counts);
-
   if (argc <= 1) {
     /* Process stdin in a single thread. */
     count_words(&word_counts, stdin);
   } else {
-    /* TODO */
-  }
+    /* 几个文件几个thread，每个thread打开自己的文件，但是对于word_counts改变是并发的
+        传参要传入文件名，传入公共变量
+    */
+    int rc;
+    pthread_t threads[argc-1];
+    pargs arg[argc-1];
 
+    for(int t = 0; t < argc-1; t++) {
+      
+      arg[t].word_counts = &word_counts;
+      arg[t].filename = new_str(argv[t+1]);
+     
+      rc = pthread_create(&threads[t], NULL, countword, (void*)&arg[t]);
+      
+      if(rc) {
+      printf("ERROR; return code from pthread_create() is %d\n", rc);
+      exit(-1);
+      }
+    }
+    for(int t = 0; t < argc-1; t ++) {
+      pthread_join(threads[t], NULL);
+    }
+  }
   /* Output final result of all threads' work. */
   wordcount_sort(&word_counts, less_count);
   fprint_words(&word_counts, stdout);
