@@ -101,7 +101,8 @@ static void start_process(void* file_name_) {
     if_.eflags = FLAG_IF | FLAG_MBS;
     success = load(file_name, &if_.eip, &if_.esp);
   }
-
+  if_.esp -= 0xc;
+  if_.esp -= 0x8;
   /* Handle failure with succesful PCB malloc. Must free the PCB */
   if (!success && pcb_success) {
     // Avoid race where PCB is freed before t->pcb is set to NULL
@@ -119,7 +120,6 @@ static void start_process(void* file_name_) {
     thread_exit();
   }
 
- if_.esp -= 0xc; 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
